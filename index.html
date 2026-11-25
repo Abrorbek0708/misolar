@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>:root{color-scheme:light}body{margin:0}</style>
+<title>Logarifm testlari</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;600&family=STIX+Two+Text:ital,wght@0,400..700;1,400..700&display=swap">
+<style>
+/* Layout: one reading column. A log-scale slide rule under the title doubles as the progress cursor; 20 question cards follow, each with options, feedback and step-by-step solution. */
+:root{
+  --bg:#F2F5F8;
+  --surface:#FFFFFF;
+  --ink:#13202C;
+  --muted:#53657A;
+  --line:#CBD5DF;
+  --accent:#2146C7;
+  --accent-soft:#E3EAFB;
+  --ok:#0E7A4B;
+  --ok-soft:#DDF3E8;
+  --bad:#B4281E;
+  --bad-soft:#FBE4E1;
+  --font-display:'Bricolage Grotesque','Avenir Next','Segoe UI',system-ui,sans-serif;
+  --font-body:'Source Sans 3','Segoe UI',system-ui,sans-serif;
+  --font-math:'STIX Two Text','Cambria Math','Times New Roman',serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1620;--surface:#15202C;--ink:#E7EEF5;--muted:#9BAEC2;--line:#2A3A4C;
+    --accent:#8FAEFF;--accent-soft:#1D2D4D;--ok:#4FD39A;--ok-soft:#12362A;--bad:#FF8F84;--bad-soft:#3F1B18;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1620;--surface:#15202C;--ink:#E7EEF5;--muted:#9BAEC2;--line:#2A3A4C;
+  --accent:#8FAEFF;--accent-soft:#1D2D4D;--ok:#4FD39A;--ok-soft:#12362A;--bad:#FF8F84;--bad-soft:#3F1B18;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{
+  background:var(--bg);color:var(--ink);
+  font-family:var(--font-body);font-size:17px;line-height:1.5;
+  padding-block:0;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  -webkit-text-size-adjust:100%;
+}
+.wrap{max-width:760px;margin:0 auto;padding-block:32px 72px;display:flex;flex-direction:column;gap:28px}
+.top{display:flex;flex-direction:column;gap:16px}
+.eyebrow{font-family:var(--font-mono);font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+h1{font-family:var(--font-display);font-weight:700;font-size:clamp(2.2rem,8vw,3.4rem);line-height:1.02;letter-spacing:-.02em;margin:0;text-wrap:balance}
+.lead{margin:0;color:var(--muted);max-width:60ch}
+
+.rule{width:100%;height:auto;display:block}
+.rule .tk{stroke:var(--muted);stroke-width:1}
+.rule .base{stroke:var(--ink);stroke-width:1.4}
+.rule text{fill:var(--muted);font:500 16px var(--font-mono)}
+.rule .cur{stroke:var(--accent);stroke-width:2}
+.rule .dot{fill:var(--accent)}
+#cur{transition:transform .5s cubic-bezier(.2,.7,.2,1)}
+
+.stats{display:flex;flex-wrap:wrap;gap:12px 28px;align-items:flex-end}
+.stat{display:flex;flex-direction:column}
+.stat b{font-family:var(--font-mono);font-weight:500;font-size:1.6rem;line-height:1.1;font-variant-numeric:tabular-nums}
+.stat span{font-size:.82rem;color:var(--muted)}
+.ghost{margin-left:auto;font:inherit;font-size:.9rem;padding:.55rem .9rem;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:4px;cursor:pointer;min-height:44px}
+.ghost:hover{border-color:var(--accent)}
+
+.nav{display:grid;grid-template-columns:repeat(auto-fill,minmax(46px,1fr));gap:8px}
+.chip{font-family:var(--font-mono);font-size:.85rem;min-height:44px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:4px;cursor:pointer;font-variant-numeric:tabular-nums}
+.chip:hover{border-color:var(--accent)}
+.chip[data-s="ok"]{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+.chip[data-s="bad"]{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
+
+.list{display:flex;flex-direction:column;gap:18px}
+.q{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:18px 18px 16px;display:flex;flex-direction:column;gap:12px;scroll-margin-top:12px;min-width:0}
+.qh{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.qn{font-family:var(--font-mono);font-weight:500;color:var(--accent);font-size:.95rem;letter-spacing:.04em}
+.badge{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;padding:.2rem .5rem;border:1px solid;border-radius:3px}
+.badge[data-s="ok"]{color:var(--ok);background:var(--ok-soft);border-color:var(--ok)}
+.badge[data-s="bad"]{color:var(--bad);background:var(--bad-soft);border-color:var(--bad)}
+.txt{margin:0}
+.disp{font-family:var(--font-math);font-size:clamp(1.05rem,4.6vw,1.3rem);text-align:center;overflow-x:auto;padding:14px 10px;background:var(--bg);border-radius:4px}
+
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:8px}
+.opt{display:flex;gap:.7rem;align-items:center;text-align:left;width:100%;min-height:48px;padding:.6rem .8rem;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:4px;font:inherit;cursor:pointer}
+.opt:hover{border-color:var(--accent)}
+.opt:focus-visible,.chip:focus-visible,.solbtn:focus-visible,.ghost:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.opt.done{cursor:default}
+.opt.done:hover{border-color:var(--line)}
+.ol{font-family:var(--font-mono);font-size:.8rem;width:1.7rem;height:1.7rem;display:grid;place-items:center;border:1px solid var(--line);border-radius:3px;flex:none;color:var(--muted)}
+.ot{font-family:var(--font-math);font-size:1.15rem;min-width:0;overflow-x:auto}
+.opt[data-state="correct"]{border-color:var(--ok);background:var(--ok-soft)}
+.opt[data-state="correct"] .ol{background:var(--ok);border-color:var(--ok);color:var(--surface)}
+.opt[data-state="wrong"]{border-color:var(--bad);background:var(--bad-soft)}
+.opt[data-state="wrong"] .ol{background:var(--bad);border-color:var(--bad);color:var(--surface)}
+
+.note{font-size:.88rem;color:var(--muted);margin:0}
+.fb{margin:0;font-weight:600}
+.fb[data-s="ok"]{color:var(--ok)}
+.fb[data-s="bad"]{color:var(--bad)}
+.solbtn{align-self:flex-start;font:inherit;font-size:.92rem;font-weight:600;color:var(--accent);background:var(--accent-soft);border:1px solid transparent;border-radius:4px;padding:.55rem .9rem;min-height:44px;cursor:pointer}
+.sol{display:flex;flex-direction:column;gap:12px;border-top:1px solid var(--line);padding-top:14px}
+.steps{margin:0;padding:0;list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:10px}
+.steps li{counter-increment:s;display:grid;grid-template-columns:1.6rem minmax(0,1fr);gap:10px;align-items:baseline}
+.steps li::before{content:counter(s);font-family:var(--font-mono);font-size:.8rem;color:var(--muted);text-align:right}
+.steps li>div{min-width:0;overflow-x:auto;padding-block:2px}
+.final{margin:0;font-weight:600}
+
+.result{border:1px solid var(--accent);background:var(--accent-soft);border-radius:6px;padding:18px}
+.result h2{font-family:var(--font-display);margin:0 0 6px;font-size:1.5rem}
+.result p{margin:0}
+.keybox summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-weight:600}
+.key{list-style:none;margin:8px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}
+.key li{display:flex;justify-content:space-between;gap:8px;padding:.45rem .65rem;border:1px solid var(--line);background:var(--surface);border-radius:4px;font-family:var(--font-mono);font-size:.88rem}
+.key b{font-weight:500;color:var(--accent)}
+.foot{font-size:.85rem;color:var(--muted)}
+
+/* Math */
+.m{font-family:var(--font-math);white-space:nowrap}
+.m i{font-style:italic}
+.m sub,.m sup{font-size:.7em;line-height:0}
+.m .rel{margin:0 .3em}
+.m .op{margin:0 .16em}
+.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 .12em}
+.frac>.n{border-bottom:1px solid currentColor;padding:0 .2em .05em}
+.frac>.d{padding:.05em .2em 0}
+.rad{display:inline-flex;align-items:flex-start;vertical-align:middle}
+.rad>.rs{line-height:1.15;margin-right:-.04em}
+.rad>.rb{border-top:1px solid currentColor;margin-top:.12em;padding:.04em .1em 0;line-height:1.15}
+.rad>.idx{align-self:flex-start;font-size:.55em;margin-right:-.5em;position:relative;top:.2em;line-height:1}
+
+@media (prefers-reduced-motion:reduce){#cur{transition:none}}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow">Milliy sertifikat · 15-misollar</div>
+    <h1>Logarifm testlari</h1>
+    <p class="lead">20 ta masala. Variantni tanlang, javob darrov tekshiriladi. Yechim qadamlari har bir savol ostida ochiladi. Shkaladagi kursor har bir javobdan keyin 1 dan 10 tomon siljiydi.</p>
+    <svg id="rule" class="rule" viewBox="0 0 640 68" aria-hidden="true"></svg>
+    <div class="stats">
+      <div class="stat"><b id="sAns">0/20</b><span>Javob berildi</span></div>
+      <div class="stat"><b id="sOk">0</b><span>Toʻgʻri</span></div>
+      <div class="stat"><b id="sPct">–</b><span>Aniqlik</span></div>
+      <button type="button" class="ghost" id="reset">Qayta boshlash</button>
+    </div>
+    <nav class="nav" id="nav" aria-label="Savollar roʻyxati"></nav>
+  </header>
+  <main class="list" id="list"></main>
+  <section class="result" id="result" hidden></section>
+  <details class="keybox"><summary>Javoblar kaliti</summary><ul class="key" id="key"></ul></details>
+  <footer class="foot">Manba: Milliy sertifikat test savollari, 15-misollar, 82–83-betlar.</footer>
+</div>
+
+<script>
+/*PURE-START*/
+const R=String.raw;
+const SYM={cdot:'·',times:'×',pm:'±',infty:'∞',varnothing:'∅',lg:'lg',log:'log',',':' ',' ':' '};
+const REL={le:'≤',ge:'≥',Rightarrow:'⇒',neq:'≠',approx:'≈',in:'∈'};
+const OPS={cdot:'·',times:'×'};
+const UNARY='(=<>,;[+-*R';
+function esc(c){return c==='<'?'&lt;':c==='>'?'&gt;':c==='&'?'&amp;':c}
+function conv(s){
+  let out='',i=0,last='';
+  const arg=()=>{
+    while(s[i]===' ')i++;
+    if(s[i]==='{'){let d=1,j=i+1;while(j<s.length&&d){if(s[j]==='{')d++;else if(s[j]==='}')d--;j++}const r=s.slice(i+1,j-1);i=j;return r}
+    if(s[i]==='\\'){const m=/^\\[a-zA-Z]+/.exec(s.slice(i));if(m){i+=m[0].length;return m[0]}}
+    return s[i++]||'';
+  };
+  while(i<s.length){
+    const c=s[i];
+    if(c==='\\'){
+      const m=/^\\([a-zA-Z]+|.)/.exec(s.slice(i));const name=m[1];i+=m[0].length;
+      if(name==='frac'){const a=arg(),b=arg();out+='<span class="frac"><span class="n">'+conv(a)+'</span><span class="d">'+conv(b)+'</span></span>';last='C'}
+      else if(name==='sqrt'){let idx='';if(s[i]==='['){const j=s.indexOf(']',i);idx=s.slice(i+1,j);i=j+1}const a=arg();out+='<span class="rad">'+(idx?'<sup class="idx">'+conv(idx)+'</sup>':'')+'<span class="rs">√</span><span class="rb">'+conv(a)+'</span></span>';last='C'}
+      else if(Object.prototype.hasOwnProperty.call(REL,name)){out+='<span class="rel">'+REL[name]+'</span>';last='R'}
+      else if(Object.prototype.hasOwnProperty.call(OPS,name)){out+='<span class="op">'+OPS[name]+'</span>';last='*'}
+      else if(Object.prototype.hasOwnProperty.call(SYM,name)){out+=SYM[name];if(name!==','&&name!==' ')last='C'}
+      else{out+=name;last='C'}
+      continue;
+    }
+    if(c==='_'||c==='^'){i++;const t=c==='_'?'sub':'sup';out+='<'+t+'>'+conv(arg())+'</'+t+'>';last='C';continue}
+    if(c==='-'){const un=!last||UNARY.includes(last);out+=un?'−':'<span class="op">−</span>';i++;last='-';continue}
+    if(c==='+'){out+='<span class="op">+</span>';i++;last='+';continue}
+    if(c==='='||c==='<'||c==='>'){out+='<span class="rel">'+esc(c)+'</span>';i++;last='R';continue}
+    if(c==='{'||c==='}'){i++;continue}
+    if(c===' '){out+=' ';i++;continue}
+    if(/[a-zA-Z]/.test(c)){out+='<i>'+c+'</i>';i++;last='a';continue}
+    out+=esc(c);i++;last=c;
+  }
+  return out;
+}
+function rich(s){return s.split('$').map((p,k)=>k%2?'<span class="m">'+conv(p)+'</span>':p).join('')}
+function disp(s){return '<span class="m">'+conv(s)+'</span>'}
+
+const Q=[
+{n:'15.1',
+ disp:R`\log_3(5+\log_2(3x-2))<2`,
+ post:'Tengsizlikning eng katta butun qiymatini toping.',
+ opts:['1','2','3','5'],ans:3,
+ steps:[
+  R`Aniqlanish sohasi: $3x-2>0$ va $5+\log_2(3x-2)>0$, ya'ni $x>\frac{65}{96}$.`,
+  R`Logarifm asosi $3>1$, shuning uchun tengsizlik belgisi saqlanadi: $5+\log_2(3x-2)<3^2=9$.`,
+  R`$\log_2(3x-2)<4$ $\Rightarrow$ $3x-2<16$ $\Rightarrow$ $x<6$.`,
+  R`Yechim: $\frac{65}{96}<x<6$. Eng katta butun qiymat $x=5$.`]},
+{n:'15.2',
+ disp:R`\sqrt{\log_3 x^9}-4\log_9\,\sqrt{3x}=1`,
+ post:'Tenglamaning haqiqiy ildizlari koʻpaytmasini toping. (Agar u bitta boʻlsa, shu ildizini toping.)',
+ opts:['3','27','81','243'],ans:3,
+ steps:[
+  R`$x>0$ boʻlishi kerak. $t=\log_3 x$ deymiz. $\sqrt{\log_3 x^9}=\sqrt{9t}=3\sqrt{t}$, bunda $t\ge 0$.`,
+  R`$4\log_9\sqrt{3x}=4\cdot\frac{1}{2}\cdot\frac{1}{2}\log_3(3x)=\log_3(3x)=1+t$.`,
+  R`$3\sqrt{t}-(1+t)=1$. $s=\sqrt{t}$ desak, $s^2-3s+2=0$ $\Rightarrow$ $s=1$ yoki $s=2$.`,
+  R`$t=1$ yoki $t=4$ $\Rightarrow$ $x=3$ yoki $x=81$.`,
+  R`Ildizlar koʻpaytmasi: $3\cdot 81=243$.`]},
+{n:'15.3',
+ disp:R`2\log_{\sqrt2}(8x)=-8\log_{0,25}x^2`,
+ post:'Tenglamaning haqiqiy ildizlari koʻpaytmasini toping. (Agar u bitta boʻlsa, shu ildizini toping.)',
+ opts:['8','2','16',R`$\varnothing$`],ans:0,
+ steps:[
+  R`Aniqlanish: $8x>0$ $\Rightarrow$ $x>0$.`,
+  R`$\log_{\sqrt2}(8x)=2\log_2(8x)=2(3+\log_2 x)$, shuning uchun chap tomon: $4(3+\log_2 x)=12+4\log_2 x$.`,
+  R`$\log_{0,25}x^2=\frac{2\log_2 x}{-2}=-\log_2 x$, shuning uchun oʻng tomon: $-8\cdot(-\log_2 x)=8\log_2 x$.`,
+  R`$12+4\log_2 x=8\log_2 x$ $\Rightarrow$ $\log_2 x=3$ $\Rightarrow$ $x=8$.`,
+  R`Ildiz bitta, shuning uchun javob shu ildizning oʻzi: 8.`]},
+{n:'15.4',
+ pre:'Tenglamaning haqiqiy ildizlari yigʻindisini toping.',
+ disp:R`\log_6(x+4)-\log_6\frac{1}{x-1}=1`,
+ opts:['3','4','5','2'],ans:3,
+ steps:[
+  R`Aniqlanish: $x+4>0$ va $x-1>0$ $\Rightarrow$ $x>1$.`,
+  R`$-\log_6\frac{1}{x-1}=\log_6(x-1)$, shuning uchun $\log_6(x+4)(x-1)=1$.`,
+  R`$(x+4)(x-1)=6$ $\Rightarrow$ $x^2+3x-10=0$ $\Rightarrow$ $x=2$ yoki $x=-5$.`,
+  R`$x>1$ shartga faqat $x=2$ mos keladi. Yigʻindi: 2.`]},
+{n:'15.5',
+ pre:'Tenglamaning haqiqiy ildizlari yigʻindisini hisoblang.',
+ disp:R`\log_5 x\cdot\log_5(x-3)+1=\log_5(x^2-3x)`,
+ opts:['13','25','15','6'],ans:0,
+ steps:[
+  R`Aniqlanish: $x>0$ va $x-3>0$ $\Rightarrow$ $x>3$.`,
+  R`$a=\log_5 x$, $b=\log_5(x-3)$ deymiz. $\log_5(x^2-3x)=\log_5 x+\log_5(x-3)=a+b$.`,
+  R`$ab+1=a+b$ $\Rightarrow$ $(a-1)(b-1)=0$.`,
+  R`$a=1$ $\Rightarrow$ $x=5$. $b=1$ $\Rightarrow$ $x-3=5$ $\Rightarrow$ $x=8$. Ikkalasi ham $x>3$ ni qanoatlantiradi.`,
+  R`Yigʻindi: $5+8=13$.`]},
+{n:'15.6',
+ pre:'Tengsizlikni yeching.',
+ disp:R`\log_{1/2}(x+3)\ge\log_{1/4}(x+15)`,
+ opts:[R`$(0;3]$`,R`$(-3;1]$`,R`$(-3;0]$`,R`$(-3;2]$`],ans:1,
+ steps:[
+  R`Aniqlanish: $x+3>0$ $\Rightarrow$ $x>-3$ ($x+15>0$ shart avtomatik bajariladi).`,
+  R`$\log_{1/4}(x+15)=\frac{1}{2}\log_{1/2}(x+15)$, chunki $\log_{1/2}\frac{1}{4}=2$.`,
+  R`$2\log_{1/2}(x+3)\ge\log_{1/2}(x+15)$ $\Rightarrow$ $\log_{1/2}(x+3)^2\ge\log_{1/2}(x+15)$.`,
+  R`Asos $\frac{1}{2}<1$, shuning uchun belgi almashadi: $(x+3)^2\le x+15$ $\Rightarrow$ $x^2+5x-6\le 0$ $\Rightarrow$ $-6\le x\le 1$.`,
+  R`$x>-3$ bilan kesishma: $(-3;1]$.`]},
+{n:'15.7',
+ pre:'Tenglamaning haqiqiy ildizlari yigʻindisini toping.',
+ disp:R`\log_4\,\log_2 x+\log_2\,\log_4 x=2`,
+ opts:['32','16','8','64'],ans:1,
+ steps:[
+  R`Aniqlanish: $\log_2 x>0$ $\Rightarrow$ $x>1$.`,
+  R`$t=\log_2 x>0$ deymiz. $\log_4\log_2 x=\frac{1}{2}\log_2 t$. Yana $\log_4 x=\frac{t}{2}$, demak $\log_2\frac{t}{2}=\log_2 t-1$.`,
+  R`$\frac{1}{2}\log_2 t+\log_2 t-1=2$ $\Rightarrow$ $\frac{3}{2}\log_2 t=3$ $\Rightarrow$ $\log_2 t=2$ $\Rightarrow$ $t=4$.`,
+  R`$\log_2 x=4$ $\Rightarrow$ $x=16$. Ildiz bitta, yigʻindi 16.`]},
+{n:'15.8',
+ disp:R`\log_3(x-6)+\sqrt{\log_3^2(x-1)}=0`,
+ post:'Tenglama nechta haqiqiy ildizga ega?',
+ opts:['3','1','0','2'],ans:1,
+ steps:[
+  R`Aniqlanish: $x-6>0$ va $x-1>0$ $\Rightarrow$ $x>6$.`,
+  R`$\sqrt{\log_3^2(x-1)}=|\log_3(x-1)|$. $x>6$ da $x-1>5>1$, shuning uchun $\log_3(x-1)>0$ va modul belgisi oddiy qavsga aylanadi.`,
+  R`$\log_3(x-6)+\log_3(x-1)=0$ $\Rightarrow$ $(x-6)(x-1)=1$ $\Rightarrow$ $x^2-7x+5=0$.`,
+  R`$x=\frac{7\pm\sqrt{29}}{2}$. $x>6$ shartga faqat $\frac{7+\sqrt{29}}{2}\approx 6,19$ mos keladi.`,
+  R`Javob: 1 ta ildiz.`]},
+{n:'15.9',
+ disp:R`(\log_3 x)^2-\log_3 x^2+\log_2\frac{1}{8}=0`,
+ post:'Tenglamaning ildizlari koʻpaytmasini toping.',
+ opts:[R`$\frac{1}{3}$`,'1','3','9'],ans:3,
+ steps:[
+  R`Aniqlanish: $x>0$. $\log_2\frac{1}{8}=-3$ va $\log_3 x^2=2\log_3 x$.`,
+  R`$t=\log_3 x$ deymiz: $t^2-2t-3=0$ $\Rightarrow$ $t=3$ yoki $t=-1$.`,
+  R`$x=3^3=27$ yoki $x=3^{-1}=\frac{1}{3}$.`,
+  R`Koʻpaytma: $27\cdot\frac{1}{3}=9$.`]},
+{n:'15.10',
+ pre:'Tenglamaning haqiqiy ildizlari nechta?',
+ disp:R`\lg\,\sqrt{x+7}+\lg\,\sqrt{x+14}=1+\lg 1,2`,
+ opts:['1','2','3','Haqiqiy yechimga ega emas'],ans:0,
+ steps:[
+  R`Aniqlanish: $x+7>0$ va $x+14>0$ $\Rightarrow$ $x>-7$.`,
+  R`Oʻng tomon: $1+\lg 1,2=\lg 10+\lg 1,2=\lg 12$.`,
+  R`Chap tomon: $\lg\sqrt{(x+7)(x+14)}$. Demak $\sqrt{(x+7)(x+14)}=12$ $\Rightarrow$ $(x+7)(x+14)=144$.`,
+  R`$x^2+21x-46=0$ $\Rightarrow$ $x=2$ yoki $x=-23$. $x>-7$ shartga faqat $x=2$ mos keladi.`,
+  R`Tekshirish: $\lg 3+\lg 4=\lg 12$. Javob: 1 ta ildiz.`]},
+{n:'15.11',
+ pre:'Tenglama ildizlarining oʻrta geometrigini toping.',
+ disp:R`\log_2^2 x+3=2\log_2 x^2`,
+ opts:['4',R`$4\sqrt{2}$`,'8','16'],ans:0,
+ steps:[
+  R`Aniqlanish: $x>0$. $2\log_2 x^2=4\log_2 x$.`,
+  R`$t=\log_2 x$ deymiz: $t^2+3=4t$ $\Rightarrow$ $t^2-4t+3=0$ $\Rightarrow$ $t=1$ yoki $t=3$.`,
+  R`$x_1=2$, $x_2=8$.`,
+  R`Oʻrta geometrik: $\sqrt{x_1x_2}=\sqrt{16}=4$.`]},
+{n:'15.12',
+ pre:'Tengsizlikning yechimlari oraligʻini toping.',
+ disp:R`\log_2\,\log_{1/3}\,\log_2 x>0`,
+ opts:[R`$(0;1)$`,R`$(0;\sqrt[3]{3})$`,R`$(1;\sqrt[3]{2})$`,R`$(0;\sqrt{2})$`],ans:2,
+ steps:[
+  R`Aniqlanish: $x>0$ va $\log_2 x>0$.`,
+  R`Tashqi logarifm: $\log_2 u>0$ $\Rightarrow$ $u>1$, bunda $u=\log_{1/3}v$, $v=\log_2 x$.`,
+  R`$\log_{1/3}v>1$. Asos $\frac{1}{3}<1$, shuning uchun belgi almashadi: $0<v<\frac{1}{3}$.`,
+  R`$0<\log_2 x<\frac{1}{3}$ $\Rightarrow$ $2^0<x<2^{1/3}$.`,
+  R`Yechim: $1<x<\sqrt[3]{2}$, ya'ni $(1;\sqrt[3]{2})$.`]},
+{n:'15.13',
+ pre:'Tengsizlikni yeching.',
+ disp:R`\sqrt{\log_2 x-1}+\frac{1}{2}\log_{1/2}x^3+2>0`,
+ opts:[R`$[2;3)$`,R`$(2;3]$`,R`$[2;4)$`,R`$(2;4]$`],ans:2,
+ steps:[
+  R`Aniqlanish: $x>0$ va $\log_2 x-1\ge 0$ $\Rightarrow$ $x\ge 2$.`,
+  R`$\frac{1}{2}\log_{1/2}x^3=\frac{1}{2}\cdot(-3\log_2 x)=-\frac{3}{2}\log_2 x$. $t=\log_2 x$ deymiz, $t\ge 1$.`,
+  R`$s=\sqrt{t-1}\ge 0$ desak, $t=s^2+1$ va tengsizlik: $s-\frac{3}{2}(s^2+1)+2>0$ $\Rightarrow$ $3s^2-2s-1<0$.`,
+  R`$(3s+1)(s-1)<0$ $\Rightarrow$ $-\frac{1}{3}<s<1$. $s\ge 0$ boʻlgani uchun $0\le s<1$.`,
+  R`$t-1<1$ $\Rightarrow$ $\log_2 x<2$ $\Rightarrow$ $x<4$. Aniqlanish sohasi bilan: $2\le x<4$, ya'ni $[2;4)$.`]},
+{n:'15.14',
+ pre:R`Agar $x=\log_{24}36$ va $y=\log_6 12$ boʻlsa, $\frac{xy-1}{x}$ ni hisoblang.`,
+ opts:[R`$-1$`,R`$-\frac{1}{2}$`,R`$\frac{1}{2}$`,R`$2$`],ans:2,
+ steps:[
+  R`$a=\log_6 2$, $b=\log_6 3$ deymiz. $a+b=\log_6 6=1$.`,
+  R`$y=\log_6 12=\log_6(4\cdot 3)=2a+b=a+1$.`,
+  R`$x=\frac{\log_6 36}{\log_6 24}=\frac{2}{3a+b}=\frac{2}{2a+1}$, chunki $3a+b=2a+(a+b)=2a+1$.`,
+  R`$xy-1=\frac{2(a+1)}{2a+1}-1=\frac{1}{2a+1}$.`,
+  R`$\frac{xy-1}{x}=\frac{1}{2a+1}\cdot\frac{2a+1}{2}=\frac{1}{2}$.`]},
+{n:'15.15',
+ pre:'Tenglamaning haqiqiy ildizlari yigʻindisini toping (agar u bitta boʻlsa, shu ildizini toping).',
+ disp:R`\log_x\,\sqrt3-\log_{x^2}27=\frac{1}{2}`,
+ opts:[R`$\frac{1}{3}$`,R`$\frac{2}{3}$`,R`$\frac{1}{9}$`,R`$\frac{7}{9}$`],ans:2,
+ steps:[
+  R`Aniqlanish: $x>0$, $x\neq 1$.`,
+  R`$\log_x\sqrt3=\frac{1}{2}\log_x 3$, $\log_{x^2}27=\frac{1}{2}\log_x 27=\frac{3}{2}\log_x 3$.`,
+  R`$\frac{1}{2}\log_x 3-\frac{3}{2}\log_x 3=-\log_x 3=\frac{1}{2}$ $\Rightarrow$ $\log_x 3=-\frac{1}{2}$.`,
+  R`$x^{-1/2}=3$ $\Rightarrow$ $x=3^{-2}=\frac{1}{9}$. Ildiz bitta: $\frac{1}{9}$.`]},
+{n:'15.16',
+ pre:'Hisoblang.',
+ disp:R`\frac{\log_6 30-\frac{1}{2}\log_6 150}{\log_7 14-\frac{1}{3}\log_7 56}`,
+ opts:[R`$\frac{1}{2}$`,R`$\frac{2}{3}$`,R`$\frac{3}{4}$`,R`$\frac{4}{5}$`],ans:2,
+ steps:[
+  R`Surat: $\log_6 30-\log_6\sqrt{150}=\log_6\frac{30}{5\sqrt6}=\log_6\sqrt6=\frac{1}{2}$.`,
+  R`Maxraj: $\sqrt[3]{56}=2\sqrt[3]{7}$, shuning uchun $\log_7 14-\log_7\sqrt[3]{56}=\log_7\frac{14}{2\sqrt[3]{7}}=\log_7 7^{2/3}=\frac{2}{3}$.`,
+  R`Nisbat: $\frac{1}{2}:\frac{2}{3}=\frac{3}{4}$.`]},
+{n:'15.17',
+ pre:'Tenglamaning haqiqiy ildizlari koʻpaytmasini toping (agar u bitta boʻlsa, shu ildizini toping).',
+ disp:R`(10^4)^{\lg x}-4(10^2)^{\lg x}+4=0`,
+ opts:['1',R`$\sqrt{3}$`,'2',R`$\sqrt{2}$`],ans:3,
+ steps:[
+  R`Aniqlanish: $x>0$.`,
+  R`$(10^4)^{\lg x}=(10^{\lg x})^4=x^4$ va $(10^2)^{\lg x}=x^2$, chunki $10^{\lg x}=x$.`,
+  R`$x^4-4x^2+4=0$ $\Rightarrow$ $(x^2-2)^2=0$ $\Rightarrow$ $x^2=2$.`,
+  R`$x>0$ boʻlgani uchun $x=\sqrt2$. Ildiz bitta.`]},
+{n:'15.18',
+ pre:'Tenglamaning haqiqiy ildizlari yigʻindisini toping. (Agar u bitta boʻlsa, shu ildizini toping.)',
+ disp:R`\sqrt{x+\log_2\,\sqrt[4]{\sqrt2\sqrt{\sqrt2}}}=\sqrt{\log_{\sqrt{\sqrt2}}\sqrt[4]{\sqrt{2\sqrt2}}}`,
+ opts:[R`$\frac{1}{4}$`,R`$\frac{9}{16}$`,R`$\frac{5}{8}$`,R`$\frac{3}{8}$`],ans:1,
+ steps:[
+  R`Chap tomonda: $\sqrt[4]{\sqrt2\cdot\sqrt{\sqrt2}}=\sqrt[4]{2^{1/2}\cdot 2^{1/4}}=2^{3/16}$, shuning uchun $\log_2 2^{3/16}=\frac{3}{16}$.`,
+  R`Oʻng tomonda asos: $\sqrt{\sqrt2}=2^{1/4}$. Logarifm ostidagi son: $\sqrt[4]{\sqrt{2\sqrt2}}=\sqrt[4]{2^{3/4}}=2^{3/16}$.`,
+  R`$\log_{2^{1/4}}2^{3/16}=\frac{3}{16}:\frac{1}{4}=\frac{3}{4}$.`,
+  R`$\sqrt{x+\frac{3}{16}}=\sqrt{\frac{3}{4}}$ $\Rightarrow$ $x+\frac{3}{16}=\frac{3}{4}$ $\Rightarrow$ $x=\frac{9}{16}$.`,
+  R`Ildiz bitta: $x=\frac{9}{16}$.`]},
+{n:'15.19',
+ disp:R`\log_2(3x+5)+\sqrt{\log_2^2(2x+5)}=0`,
+ post:'Tenglamaning haqiqiy ildizlari yigʻindisini toping.',
+ opts:[R`$-1$`,R`$-1,5$`,R`$-2$`,R`$-2,5$`],ans:1,
+ steps:[
+  R`Aniqlanish: $3x+5>0$ va $2x+5>0$ $\Rightarrow$ $x>-\frac{5}{3}$.`,
+  R`$\sqrt{\log_2^2(2x+5)}=|\log_2(2x+5)|$. $x>-\frac{5}{3}$ da $2x+5>\frac{5}{3}>1$, demak $\log_2(2x+5)>0$ va modul belgisi qavsga aylanadi.`,
+  R`$\log_2(3x+5)(2x+5)=0$ $\Rightarrow$ $(3x+5)(2x+5)=1$ $\Rightarrow$ $6x^2+25x+24=0$.`,
+  R`$x=\frac{-25\pm 7}{12}$, ya'ni $x=-\frac{3}{2}$ yoki $x=-\frac{8}{3}$.`,
+  R`$x>-\frac{5}{3}$ shartga faqat $x=-\frac{3}{2}$ mos keladi. Tekshirish: $\log_2 0,5+\log_2 2=-1+1=0$.`]},
+{n:'15.20',
+ pre:'Tenglama nechta haqiqiy ildizga ega?',
+ disp:R`\frac{\lg\,\sqrt{x^2+2x-3}}{\lg\,\sqrt[3]{x^3-1}}=\frac{3}{2}`,
+ opts:['0','1','2','3'],ans:1,
+ note:'Rasmda bu masalaning variantlari koʻrinmaydi. 0 dan 3 gacha variantlarni oʻzim qoʻshdim.',
+ steps:[
+  R`Aniqlanish: $x^2+2x-3>0$ $\Rightarrow$ $x<-3$ yoki $x>1$; $x^3-1>0$ $\Rightarrow$ $x>1$. Umumiy shart: $x>1$. Maxraj nolga teng boʻlmasin: $x^3-1\neq 1$, ya'ni $x\neq\sqrt[3]{2}$.`,
+  R`$\lg\sqrt{x^2+2x-3}=\frac{1}{2}\lg(x^2+2x-3)$ va $\lg\sqrt[3]{x^3-1}=\frac{1}{3}\lg(x^3-1)$.`,
+  R`$\frac{3}{2}\cdot\frac{\lg(x^2+2x-3)}{\lg(x^3-1)}=\frac{3}{2}$ $\Rightarrow$ $\lg(x^2+2x-3)=\lg(x^3-1)$.`,
+  R`$x^2+2x-3=x^3-1$ $\Rightarrow$ $x^3-x^2-2x+2=0$ $\Rightarrow$ $(x-1)(x^2-2)=0$ $\Rightarrow$ $x=1$ yoki $x=\pm\sqrt2$.`,
+  R`$x>1$ shartga faqat $x=\sqrt2$ mos keladi ($\sqrt2\neq\sqrt[3]{2}$). Javob: 1 ta ildiz.`]}
+];
+/*PURE-END*/
+
+(function(){
+  const L=['A','B','C','D'];
+  const KEY='logarifm-15-v1';
+  const st={a:Array(Q.length).fill(null),o:Array(Q.length).fill(false)};
+  try{const v=JSON.parse(localStorage.getItem(KEY)||'null');if(v&&Array.isArray(v.a)&&v.a.length===Q.length)st.a=v.a}catch(e){}
+  const save=()=>{try{localStorage.setItem(KEY,JSON.stringify({a:st.a}))}catch(e){}};
+  const $=(s)=>document.querySelector(s);
+  const list=$('#list'),nav=$('#nav'),res=$('#result');
+
+  /* slide-rule scale, true log spacing */
+  (function(){
+    const W=620,X0=10,base=40;let g='<line class="base" x1="10" x2="630" y1="40" y2="40"/>';
+    for(let k=10;k<=100;k++){
+      if(!(k<20||(k<40&&k%2===0)||k%5===0))continue;
+      const x=(X0+W*Math.log10(k/10)).toFixed(1),major=k%10===0,mid=k%5===0,h=major?24:mid?15:9;
+      g+='<line class="tk" x1="'+x+'" x2="'+x+'" y1="'+base+'" y2="'+(base-h)+'"/>';
+      if(major)g+='<text x="'+x+'" y="63" text-anchor="middle">'+(k/10)+'</text>';
+    }
+    g+='<g id="cur" style="transform:translateX(10px)"><line class="cur" x1="0" x2="0" y1="2" y2="46"/><circle class="dot" cx="0" cy="40" r="4"/></g>';
+    $('#rule').innerHTML=g;
+  })();
+
+  Q.forEach((q,i)=>{
+    const el=document.createElement('article');el.className='q';el.id='q'+(i+1);
+    el.innerHTML=
+      '<div class="qh"><span class="qn">'+q.n+'</span><span class="badge" hidden></span></div>'+
+      (q.pre?'<p class="txt">'+rich(q.pre)+'</p>':'')+
+      (q.disp?'<div class="disp">'+disp(q.disp)+'</div>':'')+
+      (q.post?'<p class="txt">'+rich(q.post)+'</p>':'')+
+      '<div class="opts">'+q.opts.map((o,k)=>'<button type="button" class="opt" data-k="'+k+'"><span class="ol">'+L[k]+'</span><span class="ot">'+rich(o)+'</span></button>').join('')+'</div>'+
+      (q.note?'<p class="note">'+q.note+'</p>':'')+
+      '<p class="fb" role="status" hidden></p>'+
+      '<button type="button" class="solbtn" aria-expanded="false">Yechimni koʻrish</button>'+
+      '<div class="sol" hidden><ol class="steps">'+q.steps.map(s=>'<li><div>'+rich(s)+'</div></li>').join('')+'</ol>'+
+      '<p class="final">Javob: '+L[q.ans]+') '+rich(q.opts[q.ans])+'</p></div>';
+    list.appendChild(el);
+
+    const ch=document.createElement('button');ch.type='button';ch.className='chip';ch.dataset.i=i;ch.textContent=i+1;
+    ch.setAttribute('aria-label',q.n+'-savolga oʻtish');
+    nav.appendChild(ch);
+  });
+
+  $('#key').innerHTML=Q.map(q=>'<li><span>'+q.n+'</span><b>'+L[q.ans]+'</b></li>').join('');
+
+  function paint(i){
+    const el=document.getElementById('q'+(i+1)),q=Q[i],a=st.a[i];
+    el.querySelectorAll('.opt').forEach((b,k)=>{
+      let s='';
+      if(a!==null){if(k===q.ans)s='correct';else if(k===a)s='wrong'}
+      if(s)b.dataset.state=s;else delete b.dataset.state;
+      b.setAttribute('aria-pressed',String(a===k));
+      b.classList.toggle('done',a!==null);
+    });
+    const bd=el.querySelector('.badge'),fb=el.querySelector('.fb');
+    if(a===null){bd.hidden=true;fb.hidden=true}
+    else{
+      const ok=a===q.ans;
+      bd.hidden=false;bd.dataset.s=ok?'ok':'bad';bd.textContent=ok?'Toʻgʻri':'Notoʻgʻri';
+      fb.hidden=false;fb.dataset.s=ok?'ok':'bad';
+      fb.textContent=ok?'Toʻgʻri javob.':'Notoʻgʻri. Toʻgʻri javob: '+L[q.ans]+'.';
+    }
+    const sol=el.querySelector('.sol'),btn=el.querySelector('.solbtn');
+    sol.hidden=!st.o[i];
+    btn.setAttribute('aria-expanded',String(st.o[i]));
+    btn.textContent=st.o[i]?'Yechimni yashirish':'Yechimni koʻrish';
+    const ch=document.querySelector('.chip[data-i="'+i+'"]');
+    if(a===null)delete ch.dataset.s;else ch.dataset.s=a===q.ans?'ok':'bad';
+  }
+
+  function stats(){
+    const n=Q.length,answered=st.a.filter(x=>x!==null).length,correct=st.a.filter((x,i)=>x===Q[i].ans).length;
+    $('#sAns').textContent=answered+'/'+n;
+    $('#sOk').textContent=correct;
+    $('#sPct').textContent=answered?Math.round(100*correct/answered)+'%':'–';
+    const x=10+620*Math.log10(1+9*answered/n);
+    $('#cur').style.transform='translateX('+x.toFixed(1)+'px)';
+    if(answered===n){
+      const wrong=Q.filter((q,i)=>st.a[i]!==q.ans).map(q=>q.n);
+      res.hidden=false;
+      res.innerHTML='<h2>Natija: '+correct+'/'+n+'</h2><p>'+Math.round(100*correct/n)+'% toʻgʻri. '+(wrong.length?'Qayta koʻrib chiqing: '+wrong.join(', ')+'.':'Hammasi toʻgʻri.')+'</p>';
+    }else{res.hidden=true;res.innerHTML=''}
+  }
+
+  list.addEventListener('click',e=>{
+    const card=e.target.closest('.q');if(!card)return;
+    const i=+card.id.slice(1)-1,opt=e.target.closest('.opt'),sb=e.target.closest('.solbtn');
+    if(opt){if(st.a[i]!==null)return;st.a[i]=+opt.dataset.k;save();paint(i);stats()}
+    else if(sb){st.o[i]=!st.o[i];paint(i)}
+  });
+  nav.addEventListener('click',e=>{
+    const ch=e.target.closest('.chip');if(!ch)return;
+    const el=document.getElementById('q'+(+ch.dataset.i+1));
+    el.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
+  });
+  $('#reset').addEventListener('click',()=>{
+    st.a.fill(null);st.o.fill(false);save();
+    Q.forEach((_,i)=>paint(i));stats();
+    window.scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+  });
+
+  Q.forEach((_,i)=>paint(i));
+  stats();
+})();
+</script>
+</body>
+</html>
