@@ -10,17 +10,17 @@
 <style>
 /* Layout: one reading column. A log-scale slide rule under the title doubles as the progress cursor; 20 question cards follow, each with options, feedback and step-by-step solution. */
 :root{
-  --bg:#F2F5F8;
-  --surface:#FFFFFF;
-  --ink:#13202C;
-  --muted:#53657A;
-  --line:#CBD5DF;
-  --accent:#2146C7;
-  --accent-soft:#E3EAFB;
-  --ok:#0E7A4B;
-  --ok-soft:#DDF3E8;
-  --bad:#B4281E;
-  --bad-soft:#FBE4E1;
+  --bg:#eef2f7;
+  --surface:#ffffff;
+  --ink:#18212f;
+  --muted:#66758a;
+  --line:#d7deea;
+  --accent:#3155d9;
+  --accent-soft:#edf1ff;
+  --ok:#087c55;
+  --ok-soft:#def4e9;
+  --bad:#b63b32;
+  --bad-soft:#fde9e6;
   --font-display:'Bricolage Grotesque','Avenir Next','Segoe UI',system-ui,sans-serif;
   --font-body:'Source Sans 3','Segoe UI',system-ui,sans-serif;
   --font-math:'STIX Two Text','Cambria Math','Times New Roman',serif;
@@ -41,99 +41,46 @@
 *{box-sizing:border-box}
 html{background:var(--bg)}
 body{
-  background:var(--bg);color:var(--ink);
-  font-family:var(--font-body);font-size:17px;line-height:1.5;
-  padding-block:0;
-  padding-left:max(16px,env(safe-area-inset-left,0px));
-  padding-right:max(16px,env(safe-area-inset-right,0px));
-  -webkit-text-size-adjust:100%;
+  background:transparent;
+  color:var(--ink);
+  font-family:var(--font-body);
+  font-size:17px;
 }
-.wrap{max-width:760px;margin:0 auto;padding-block:32px 72px;display:flex;flex-direction:column;gap:28px}
-.top{display:flex;flex-direction:column;gap:16px}
-.eyebrow{font-family:var(--font-mono);font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-h1{font-family:var(--font-display);font-weight:700;font-size:clamp(2.2rem,8vw,3.4rem);line-height:1.02;letter-spacing:-.02em;margin:0;text-wrap:balance}
-.lead{margin:0;color:var(--muted);max-width:60ch}
-
-.rule{width:100%;height:auto;display:block}
-.rule .tk{stroke:var(--muted);stroke-width:1}
-.rule .base{stroke:var(--ink);stroke-width:1.4}
-.rule text{fill:var(--muted);font:500 16px var(--font-mono)}
-.rule .cur{stroke:var(--accent);stroke-width:2}
-.rule .dot{fill:var(--accent)}
-#cur{transition:transform .5s cubic-bezier(.2,.7,.2,1)}
-
-.stats{display:flex;flex-wrap:wrap;gap:12px 28px;align-items:flex-end}
-.stat{display:flex;flex-direction:column}
-.stat b{font-family:var(--font-mono);font-weight:500;font-size:1.6rem;line-height:1.1;font-variant-numeric:tabular-nums}
-.stat span{font-size:.82rem;color:var(--muted)}
-.ghost{margin-left:auto;font:inherit;font-size:.9rem;padding:.55rem .9rem;border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:4px;cursor:pointer;min-height:44px}
-.ghost:hover{border-color:var(--accent)}
-
-.nav{display:grid;grid-template-columns:repeat(auto-fill,minmax(46px,1fr));gap:8px}
-.chip{font-family:var(--font-mono);font-size:.85rem;min-height:44px;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:4px;cursor:pointer;font-variant-numeric:tabular-nums}
-.chip:hover{border-color:var(--accent)}
-.chip[data-s="ok"]{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
-.chip[data-s="bad"]{background:var(--bad-soft);border-color:var(--bad);color:var(--bad)}
-
-.list{display:flex;flex-direction:column;gap:18px}
-.q{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:18px 18px 16px;display:flex;flex-direction:column;gap:12px;scroll-margin-top:12px;min-width:0}
-.qh{display:flex;align-items:center;justify-content:space-between;gap:12px}
-.qn{font-family:var(--font-mono);font-weight:500;color:var(--accent);font-size:.95rem;letter-spacing:.04em}
-.badge{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;padding:.2rem .5rem;border:1px solid;border-radius:3px}
-.badge[data-s="ok"]{color:var(--ok);background:var(--ok-soft);border-color:var(--ok)}
-.badge[data-s="bad"]{color:var(--bad);background:var(--bad-soft);border-color:var(--bad)}
-.txt{margin:0}
-.disp{font-family:var(--font-math);font-size:clamp(1.05rem,4.6vw,1.3rem);text-align:center;overflow-x:auto;padding:14px 10px;background:var(--bg);border-radius:4px}
-
-.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:8px}
-.opt{display:flex;gap:.7rem;align-items:center;text-align:left;width:100%;min-height:48px;padding:.6rem .8rem;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:4px;font:inherit;cursor:pointer}
-.opt:hover{border-color:var(--accent)}
-.opt:focus-visible,.chip:focus-visible,.solbtn:focus-visible,.ghost:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.opt.done{cursor:default}
-.opt.done:hover{border-color:var(--line)}
-.ol{font-family:var(--font-mono);font-size:.8rem;width:1.7rem;height:1.7rem;display:grid;place-items:center;border:1px solid var(--line);border-radius:3px;flex:none;color:var(--muted)}
-.ot{font-family:var(--font-math);font-size:1.15rem;min-width:0;overflow-x:auto}
-.opt[data-state="correct"]{border-color:var(--ok);background:var(--ok-soft)}
-.opt[data-state="correct"] .ol{background:var(--ok);border-color:var(--ok);color:var(--surface)}
-.opt[data-state="wrong"]{border-color:var(--bad);background:var(--bad-soft)}
-.opt[data-state="wrong"] .ol{background:var(--bad);border-color:var(--bad);color:var(--surface)}
-
-.note{font-size:.88rem;color:var(--muted);margin:0}
-.fb{margin:0;font-weight:600}
-.fb[data-s="ok"]{color:var(--ok)}
-.fb[data-s="bad"]{color:var(--bad)}
-.solbtn{align-self:flex-start;font:inherit;font-size:.92rem;font-weight:600;color:var(--accent);background:var(--accent-soft);border:1px solid transparent;border-radius:4px;padding:.55rem .9rem;min-height:44px;cursor:pointer}
-.sol{display:flex;flex-direction:column;gap:12px;border-top:1px solid var(--line);padding-top:14px}
-.steps{margin:0;padding:0;list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:10px}
-.steps li{counter-increment:s;display:grid;grid-template-columns:1.6rem minmax(0,1fr);gap:10px;align-items:baseline}
-.steps li::before{content:counter(s);font-family:var(--font-mono);font-size:.8rem;color:var(--muted);text-align:right}
-.steps li>div{min-width:0;overflow-x:auto;padding-block:2px}
-.final{margin:0;font-weight:600}
-
-.result{border:1px solid var(--accent);background:var(--accent-soft);border-radius:6px;padding:18px}
-.result h2{font-family:var(--font-display);margin:0 0 6px;font-size:1.5rem}
-.result p{margin:0}
-.keybox summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-weight:600}
-.key{list-style:none;margin:8px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}
-.key li{display:flex;justify-content:space-between;gap:8px;padding:.45rem .65rem;border:1px solid var(--line);background:var(--surface);border-radius:4px;font-family:var(--font-mono);font-size:.88rem}
-.key b{font-weight:500;color:var(--accent)}
-.foot{font-size:.85rem;color:var(--muted)}
-
-/* Math */
-.m{font-family:var(--font-math);white-space:nowrap}
-.m i{font-style:italic}
-.m sub,.m sup{font-size:.7em;line-height:0}
-.m .rel{margin:0 .3em}
-.m .op{margin:0 .16em}
-.frac{display:inline-flex;flex-direction:column;vertical-align:middle;text-align:center;margin:0 .12em}
-.frac>.n{border-bottom:1px solid currentColor;padding:0 .2em .05em}
-.frac>.d{padding:.05em .2em 0}
-.rad{display:inline-flex;align-items:flex-start;vertical-align:middle}
-.rad>.rs{line-height:1.15;margin-right:-.04em}
-.rad>.rb{border-top:1px solid currentColor;margin-top:.12em;padding:.04em .1em 0;line-height:1.15}
-.rad>.idx{align-self:flex-start;font-size:.55em;margin-right:-.5em;position:relative;top:.2em;line-height:1}
-
-@media (prefers-reduced-motion:reduce){#cur{transition:none}}
+.wrap{max-width:860px;padding-block:40px 84px;gap:24px}
+.top{
+  position:relative;
+  overflow:hidden;
+  padding:34px;
+  border:1px solid rgba(120,139,170,.22);
+  border-radius:22px;
+  background:rgba(255,255,255,.82);
+  box-shadow:0 24px 70px rgba(35,48,76,.10);
+  backdrop-filter:blur(18px);
+}
+.top::before{content:"";position:absolute;inset:0 0 auto;height:4px;background:linear-gradient(90deg,#3155d9,#8d73c9,#f1b56a)}
+.top::after{content:"15";position:absolute;right:26px;top:-32px;font-family:var(--font-display);font-size:9rem;font-weight:800;color:rgba(49,85,217,.055);pointer-events:none}
+.eyebrow{color:var(--accent);font-weight:700}.eyebrow::before{content:"";display:inline-block;width:7px;height:7px;margin-right:8px;border-radius:50%;background:#f1b56a;box-shadow:0 0 0 5px rgba(241,181,106,.15);vertical-align:1px}
+h1{position:relative;z-index:1;font-size:clamp(3rem,9vw,5.1rem);line-height:.92;letter-spacing:-.065em;max-width:8ch}
+.lead{position:relative;z-index:1;font-size:1.12rem;line-height:1.65;max-width:58ch;color:#63728a}
+.rule{padding:6px 10px;border-radius:12px;background:rgba(238,242,247,.75)}
+.stats{position:relative;z-index:1;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:rgba(246,248,252,.88)}
+.stat b{font-size:1.5rem}.stat span{letter-spacing:.01em}.ghost{border-radius:999px;font-weight:700;transition:.18s ease}.ghost:hover{background:var(--accent);border-color:var(--accent);color:#fff;transform:translateY(-2px);box-shadow:0 8px 18px rgba(49,85,217,.22)}
+.nav{grid-template-columns:repeat(10,minmax(44px,1fr));gap:7px}.chip{border-radius:10px;transition:.18s ease}.chip:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 8px 16px rgba(49,85,217,.10)}
+.chip[data-s="ok"]{box-shadow:inset 0 -3px 0 rgba(8,124,85,.18)}.chip[data-s="bad"]{box-shadow:inset 0 -3px 0 rgba(182,59,50,.18)}
+.list{gap:16px}.q{position:relative;padding:24px;border:1px solid rgba(119,138,166,.22);border-radius:16px;box-shadow:0 12px 34px rgba(31,45,72,.055);transition:.22s ease}.q:hover{transform:translateY(-2px);border-color:rgba(49,85,217,.28);box-shadow:0 18px 44px rgba(31,45,72,.09)}
+.qh{margin-bottom:2px}.qn{display:inline-grid;place-items:center;min-width:58px;height:32px;border-radius:999px;background:var(--accent-soft);font-size:.86rem}.badge{border-radius:999px}
+.txt{color:var(--ink)}.disp{border:1px solid rgba(49,85,217,.08);border-radius:12px;padding:18px 14px;font-size:clamp(1.12rem,4.6vw,1.38rem);background:linear-gradient(135deg,#f4f6fa,#f9fbff)}
+.opts{gap:10px}.opt{border-radius:11px;padding:.78rem .88rem;transition:.16s ease}.opt:not(.done):hover{border-color:var(--accent);background:var(--accent-soft);transform:translateY(-2px);box-shadow:0 8px 18px rgba(49,85,217,.09)}
+.ol{border-radius:8px;background:#f5f7fb}.opt.done:hover{transform:none}.opt[data-state="correct"]{box-shadow:inset 4px 0 0 var(--ok)}.opt[data-state="wrong"]{box-shadow:inset 4px 0 0 var(--bad)}
+.fb{font-size:.96rem}.solbtn{border-radius:999px;padding:.58rem 1rem;transition:.18s ease}.solbtn:hover{background:var(--accent);color:#fff;transform:translateY(-1px)}
+.sol{margin-top:4px}.steps li{padding:9px 10px;border-radius:10px;background:#f6f8fb}.steps li::before{font-weight:700;color:var(--accent)}
+.result{border-radius:16px;padding:22px;box-shadow:0 16px 38px rgba(49,85,217,.10)}.keybox{padding:0 4px}.key li{border-radius:10px}.foot{text-align:center;padding-top:4px}
+@media (max-width:680px){
+  .wrap{padding:18px 0 50px;gap:16px}.top{padding:22px 18px;border-radius:16px}.top::after{right:10px;font-size:7rem}
+  h1{font-size:clamp(2.7rem,15vw,4.2rem)}.lead{font-size:1rem}.stats{gap:10px 14px}.nav{grid-template-columns:repeat(5,minmax(42px,1fr));gap:6px}
+  .chip{min-height:42px}.q{padding:18px 14px;border-radius:13px}.q:hover{transform:none}.disp{padding:15px 8px}.opts{grid-template-columns:1fr}.opt{min-height:52px}.ghost{width:100%;margin-left:0}
+}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}.q,.chip,.opt,.ghost,.solbtn{transition:none}}
 </style>
 
 </head>
@@ -256,7 +203,7 @@ const Q=[
  steps:[
   R`Aniqlanish: $x+3>0$ $\Rightarrow$ $x>-3$ ($x+15>0$ shart avtomatik bajariladi).`,
   R`$\log_{1/4}(x+15)=\frac{1}{2}\log_{1/2}(x+15)$, chunki $\log_{1/2}\frac{1}{4}=2$.`,
-  R`$2\log_{1/2}(x+3)\ge\log_{1/2}(x+15)$ $\Rightarrow$ $\log_{1/2}(x+3)^2\ge\log_{1/2}(x+15)$.`,
+  R`$2\log_{1/2}(x+3)\ge\log_{1/2}(x+15)$ $\Rightarrow$ $\log_{1/2}(x+3)^2\ge\log_{1/2}(x+15)`.`,
   R`Asos $\frac{1}{2}<1$, shuning uchun belgi almashadi: $(x+3)^2\le x+15$ $\Rightarrow$ $x^2+5x-6\le 0$ $\Rightarrow$ $-6\le x\le 1$.`,
   R`$x>-3$ bilan kesishma: $(-3;1]$.`]},
 {n:'15.7',
@@ -315,7 +262,7 @@ const Q=[
   R`Tashqi logarifm: $\log_2 u>0$ $\Rightarrow$ $u>1$, bunda $u=\log_{1/3}v$, $v=\log_2 x$.`,
   R`$\log_{1/3}v>1$. Asos $\frac{1}{3}<1$, shuning uchun belgi almashadi: $0<v<\frac{1}{3}$.`,
   R`$0<\log_2 x<\frac{1}{3}$ $\Rightarrow$ $2^0<x<2^{1/3}$.`,
-  R`Yechim: $1<x<\sqrt[3]{2}$, ya'ni $(1;\sqrt[3]{2})$.`]},
+  R`Yechim: $1<x<\sqrt[3]{2}$, ya'ni $(1;\sqrt[3]{2})`.`]},
 {n:'15.13',
  pre:'Tengsizlikni yeching.',
  disp:R`\sqrt{\log_2 x-1}+\frac{1}{2}\log_{1/2}x^3+2>0`,
@@ -325,7 +272,7 @@ const Q=[
   R`$\frac{1}{2}\log_{1/2}x^3=\frac{1}{2}\cdot(-3\log_2 x)=-\frac{3}{2}\log_2 x$. $t=\log_2 x$ deymiz, $t\ge 1$.`,
   R`$s=\sqrt{t-1}\ge 0$ desak, $t=s^2+1$ va tengsizlik: $s-\frac{3}{2}(s^2+1)+2>0$ $\Rightarrow$ $3s^2-2s-1<0$.`,
   R`$(3s+1)(s-1)<0$ $\Rightarrow$ $-\frac{1}{3}<s<1$. $s\ge 0$ boʻlgani uchun $0\le s<1$.`,
-  R`$t-1<1$ $\Rightarrow$ $\log_2 x<2$ $\Rightarrow$ $x<4$. Aniqlanish sohasi bilan: $2\le x<4$, ya'ni $[2;4)$.`]},
+  R`$t-1<1$ $\Rightarrow$ $\log_2 x<2$ $\Rightarrow$ $x<4$. Aniqlanish sohasi bilan: $2\le x<4$, ya'ni $[2;4)`.`]},
 {n:'15.14',
  pre:R`Agar $x=\log_{24}36$ va $y=\log_6 12$ boʻlsa, $\frac{xy-1}{x}$ ni hisoblang.`,
  opts:[R`$-1$`,R`$-\frac{1}{2}$`,R`$\frac{1}{2}$`,R`$2$`],ans:2,
@@ -378,126 +325,4 @@ const Q=[
  steps:[
   R`Aniqlanish: $3x+5>0$ va $2x+5>0$ $\Rightarrow$ $x>-\frac{5}{3}$.`,
   R`$\sqrt{\log_2^2(2x+5)}=|\log_2(2x+5)|$. $x>-\frac{5}{3}$ da $2x+5>\frac{5}{3}>1$, demak $\log_2(2x+5)>0$ va modul belgisi qavsga aylanadi.`,
-  R`$\log_2(3x+5)(2x+5)=0$ $\Rightarrow$ $(3x+5)(2x+5)=1$ $\Rightarrow$ $6x^2+25x+24=0$.`,
-  R`$x=\frac{-25\pm 7}{12}$, ya'ni $x=-\frac{3}{2}$ yoki $x=-\frac{8}{3}$.`,
-  R`$x>-\frac{5}{3}$ shartga faqat $x=-\frac{3}{2}$ mos keladi. Tekshirish: $\log_2 0,5+\log_2 2=-1+1=0$.`]},
-{n:'15.20',
- pre:'Tenglama nechta haqiqiy ildizga ega?',
- disp:R`\frac{\lg\,\sqrt{x^2+2x-3}}{\lg\,\sqrt[3]{x^3-1}}=\frac{3}{2}`,
- opts:['0','1','2','3'],ans:1,
- note:'Rasmda bu masalaning variantlari koʻrinmaydi. 0 dan 3 gacha variantlarni oʻzim qoʻshdim.',
- steps:[
-  R`Aniqlanish: $x^2+2x-3>0$ $\Rightarrow$ $x<-3$ yoki $x>1$; $x^3-1>0$ $\Rightarrow$ $x>1$. Umumiy shart: $x>1$. Maxraj nolga teng boʻlmasin: $x^3-1\neq 1$, ya'ni $x\neq\sqrt[3]{2}$.`,
-  R`$\lg\sqrt{x^2+2x-3}=\frac{1}{2}\lg(x^2+2x-3)$ va $\lg\sqrt[3]{x^3-1}=\frac{1}{3}\lg(x^3-1)$.`,
-  R`$\frac{3}{2}\cdot\frac{\lg(x^2+2x-3)}{\lg(x^3-1)}=\frac{3}{2}$ $\Rightarrow$ $\lg(x^2+2x-3)=\lg(x^3-1)$.`,
-  R`$x^2+2x-3=x^3-1$ $\Rightarrow$ $x^3-x^2-2x+2=0$ $\Rightarrow$ $(x-1)(x^2-2)=0$ $\Rightarrow$ $x=1$ yoki $x=\pm\sqrt2$.`,
-  R`$x>1$ shartga faqat $x=\sqrt2$ mos keladi ($\sqrt2\neq\sqrt[3]{2}$). Javob: 1 ta ildiz.`]}
-];
-/*PURE-END*/
-
-(function(){
-  const L=['A','B','C','D'];
-  const KEY='logarifm-15-v1';
-  const st={a:Array(Q.length).fill(null),o:Array(Q.length).fill(false)};
-  try{const v=JSON.parse(localStorage.getItem(KEY)||'null');if(v&&Array.isArray(v.a)&&v.a.length===Q.length)st.a=v.a}catch(e){}
-  const save=()=>{try{localStorage.setItem(KEY,JSON.stringify({a:st.a}))}catch(e){}};
-  const $=(s)=>document.querySelector(s);
-  const list=$('#list'),nav=$('#nav'),res=$('#result');
-
-  /* slide-rule scale, true log spacing */
-  (function(){
-    const W=620,X0=10,base=40;let g='<line class="base" x1="10" x2="630" y1="40" y2="40"/>';
-    for(let k=10;k<=100;k++){
-      if(!(k<20||(k<40&&k%2===0)||k%5===0))continue;
-      const x=(X0+W*Math.log10(k/10)).toFixed(1),major=k%10===0,mid=k%5===0,h=major?24:mid?15:9;
-      g+='<line class="tk" x1="'+x+'" x2="'+x+'" y1="'+base+'" y2="'+(base-h)+'"/>';
-      if(major)g+='<text x="'+x+'" y="63" text-anchor="middle">'+(k/10)+'</text>';
-    }
-    g+='<g id="cur" style="transform:translateX(10px)"><line class="cur" x1="0" x2="0" y1="2" y2="46"/><circle class="dot" cx="0" cy="40" r="4"/></g>';
-    $('#rule').innerHTML=g;
-  })();
-
-  Q.forEach((q,i)=>{
-    const el=document.createElement('article');el.className='q';el.id='q'+(i+1);
-    el.innerHTML=
-      '<div class="qh"><span class="qn">'+q.n+'</span><span class="badge" hidden></span></div>'+
-      (q.pre?'<p class="txt">'+rich(q.pre)+'</p>':'')+
-      (q.disp?'<div class="disp">'+disp(q.disp)+'</div>':'')+
-      (q.post?'<p class="txt">'+rich(q.post)+'</p>':'')+
-      '<div class="opts">'+q.opts.map((o,k)=>'<button type="button" class="opt" data-k="'+k+'"><span class="ol">'+L[k]+'</span><span class="ot">'+rich(o)+'</span></button>').join('')+'</div>'+
-      (q.note?'<p class="note">'+q.note+'</p>':'')+
-      '<p class="fb" role="status" hidden></p>'+
-      '<button type="button" class="solbtn" aria-expanded="false">Yechimni koʻrish</button>'+
-      '<div class="sol" hidden><ol class="steps">'+q.steps.map(s=>'<li><div>'+rich(s)+'</div></li>').join('')+'</ol>'+
-      '<p class="final">Javob: '+L[q.ans]+') '+rich(q.opts[q.ans])+'</p></div>';
-    list.appendChild(el);
-
-    const ch=document.createElement('button');ch.type='button';ch.className='chip';ch.dataset.i=i;ch.textContent=i+1;
-    ch.setAttribute('aria-label',q.n+'-savolga oʻtish');
-    nav.appendChild(ch);
-  });
-
-  $('#key').innerHTML=Q.map(q=>'<li><span>'+q.n+'</span><b>'+L[q.ans]+'</b></li>').join('');
-
-  function paint(i){
-    const el=document.getElementById('q'+(i+1)),q=Q[i],a=st.a[i];
-    el.querySelectorAll('.opt').forEach((b,k)=>{
-      let s='';
-      if(a!==null){if(k===q.ans)s='correct';else if(k===a)s='wrong'}
-      if(s)b.dataset.state=s;else delete b.dataset.state;
-      b.setAttribute('aria-pressed',String(a===k));
-      b.classList.toggle('done',a!==null);
-    });
-    const bd=el.querySelector('.badge'),fb=el.querySelector('.fb');
-    if(a===null){bd.hidden=true;fb.hidden=true}
-    else{
-      const ok=a===q.ans;
-      bd.hidden=false;bd.dataset.s=ok?'ok':'bad';bd.textContent=ok?'Toʻgʻri':'Notoʻgʻri';
-      fb.hidden=false;fb.dataset.s=ok?'ok':'bad';
-      fb.textContent=ok?'Toʻgʻri javob.':'Notoʻgʻri. Toʻgʻri javob: '+L[q.ans]+'.';
-    }
-    const sol=el.querySelector('.sol'),btn=el.querySelector('.solbtn');
-    sol.hidden=!st.o[i];
-    btn.setAttribute('aria-expanded',String(st.o[i]));
-    btn.textContent=st.o[i]?'Yechimni yashirish':'Yechimni koʻrish';
-    const ch=document.querySelector('.chip[data-i="'+i+'"]');
-    if(a===null)delete ch.dataset.s;else ch.dataset.s=a===q.ans?'ok':'bad';
-  }
-
-  function stats(){
-    const n=Q.length,answered=st.a.filter(x=>x!==null).length,correct=st.a.filter((x,i)=>x===Q[i].ans).length;
-    $('#sAns').textContent=answered+'/'+n;
-    $('#sOk').textContent=correct;
-    $('#sPct').textContent=answered?Math.round(100*correct/answered)+'%':'–';
-    const x=10+620*Math.log10(1+9*answered/n);
-    $('#cur').style.transform='translateX('+x.toFixed(1)+'px)';
-    if(answered===n){
-      const wrong=Q.filter((q,i)=>st.a[i]!==q.ans).map(q=>q.n);
-      res.hidden=false;
-      res.innerHTML='<h2>Natija: '+correct+'/'+n+'</h2><p>'+Math.round(100*correct/n)+'% toʻgʻri. '+(wrong.length?'Qayta koʻrib chiqing: '+wrong.join(', ')+'.':'Hammasi toʻgʻri.')+'</p>';
-    }else{res.hidden=true;res.innerHTML=''}
-  }
-
-  list.addEventListener('click',e=>{
-    const card=e.target.closest('.q');if(!card)return;
-    const i=+card.id.slice(1)-1,opt=e.target.closest('.opt'),sb=e.target.closest('.solbtn');
-    if(opt){if(st.a[i]!==null)return;st.a[i]=+opt.dataset.k;save();paint(i);stats()}
-    else if(sb){st.o[i]=!st.o[i];paint(i)}
-  });
-  nav.addEventListener('click',e=>{
-    const ch=e.target.closest('.chip');if(!ch)return;
-    const el=document.getElementById('q'+(+ch.dataset.i+1));
-    el.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
-  });
-  $('#reset').addEventListener('click',()=>{
-    st.a.fill(null);st.o.fill(false);save();
-    Q.forEach((_,i)=>paint(i));stats();
-    window.scrollTo({top:0,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
-  });
-
-  Q.forEach((_,i)=>paint(i));
-  stats();
-})();
-</script>
-</body>
-</html>
+  R`$\log_2(3x+5)(2x+5)=0`
